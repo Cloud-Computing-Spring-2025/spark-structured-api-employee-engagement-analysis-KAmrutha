@@ -193,7 +193,15 @@ A list of departments meeting the specified criteria, along with the correspondi
 |------------|------------|
 | Finance    | 60%        |
 | Marketing  | 55%        |
+**Task 1 code explanation:**
 
+This task identifies departments where more than 7.5% of employees have a SatisfactionRating > 4 and EngagementLevel = 'High'. It first filters employees meeting this criterion, then calculates the total employees per department. The proportion of high-satisfaction employees is computed and departments exceeding the threshold are selected. Finally, the results are saved as a CSV file.
+
+**Output:**
+| Department | HighSatisfactionPercentage |
+|------------|------------|
+| Marketing    | 9.09       |
+| IT  | 15.0       |
 ---
 
 ### **2. Who Feels Valued but Didn’t Suggest Improvements?**
@@ -218,7 +226,16 @@ Insights into the number and proportion of employees who feel valued but aren’
 Number of Employees Feeling Valued without Suggestions: 25
 Proportion: 25%
 ```
+**Task 2 code explanation:**
 
+This task finds employees with SatisfactionRating ≥ 4 who have not provided suggestions. It filters such employees and calculates their total count and proportion relative to all employees. The final results (number and percentage) are written to a text file. This helps understand if satisfied employees are hesitant to contribute feedback.
+
+**Output:**
+```
+Number of Valued Employees Without Suggestions: 18
+Proportion: 18.0%
+
+```
 ---
 
 ### **3. Compare Engagement Levels Across Job Titles**
@@ -249,3 +266,16 @@ A comparative analysis showing average Engagement Levels across Job Titles, high
 | Support     | 2.8                |
 
 ---
+**Task 3 code explanation:**
+This task maps EngagementLevel ('Low', 'Medium', 'High') to numeric scores (1, 2, 3) for analysis. It then calculates the average EngagementScore per job title, helping identify roles with higher engagement. The computed engagement scores are saved as a CSV file for further insights.
+
+**Output:**
+| JobTitle    | AvgEngagementScore |
+|-------------|--------------------|
+| Coordinator | 1.82                |
+| Developer   | 2.14                |
+| Executive   | 1.97                |
+| Analyst     | 1.95                |
+| Support     |   1.6               |
+| Manager     | 1.88                |
+

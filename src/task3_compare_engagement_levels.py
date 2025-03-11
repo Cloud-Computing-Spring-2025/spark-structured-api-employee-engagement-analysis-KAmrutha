@@ -1,105 +1,66 @@
-# task3_compare_engagement_levels.py
-
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, when, avg, round as spark_round
 
-def initialize_spark(app_name="Task3_Compare_Engagement_Levels"):
+def initialize_spark_session(app_name="Compare_Job_Engagement_Levels"):
     """
     Initialize and return a SparkSession.
     """
-    spark = SparkSession.builder \
-        .appName(app_name) \
-        .getOrCreate()
-    return spark
+    return SparkSession.builder.appName(app_name).getOrCreate()
 
-def load_data(spark, file_path):
+def load_employee_data(spark, file_path):
     """
-    Load the employee data from a CSV file into a Spark DataFrame.
-
-    Parameters:
-        spark (SparkSession): The SparkSession object.
-        file_path (str): Path to the employee_data.csv file.
-
-    Returns:
-        DataFrame: Spark DataFrame containing employee data.
+    Load employee data from a CSV file into a Spark DataFrame.
     """
-    schema = "EmployeeID INT, Department STRING, JobTitle STRING, SatisfactionRating INT, EngagementLevel STRING, ReportsConcerns BOOLEAN, ProvidedSuggestions BOOLEAN"
-    
-    df = spark.read.csv(file_path, header=True, schema=schema)
-    return df
-
-def map_engagement_level(df):
+    schema = """
+        EmployeeID INT, 
+        Department STRING, 
+        JobTitle STRING, 
+        SatisfactionRating INT, 
+        EngagementLevel STRING, 
+        ReportsConcerns BOOLEAN, 
+        ProvidedSuggestions BOOLEAN
     """
-    Map EngagementLevel from categorical to numerical values.
+    return spark.read.csv(file_path, header=True, schema=schema)
 
-    Parameters:
-        df (DataFrame): Spark DataFrame containing employee data.
-
-    Returns:
-        DataFrame: DataFrame with an additional column for numerical EngagementScore.
+def assign_engagement_scores(employee_df):
     """
-    # TODO: Implement mapping of EngagementLevel to numerical values
-    # Example:
-    # 'Low' -> 1
-    # 'Medium' -> 2
-    # 'High' -> 3
-
-    pass  # Remove this line after implementing the function
-
-def compare_engagement_levels(df):
+    Convert EngagementLevel from categorical to numerical values.
     """
-    Compare engagement levels across different job titles and identify the top-performing job title.
+    return employee_df.withColumn("EngagementScore", 
+                                  when(col("EngagementLevel") == "Low", 1)
+                                  .when(col("EngagementLevel") == "Medium", 2)
+                                  .when(col("EngagementLevel") == "High", 3)
+                                  .otherwise(0))
 
-    Parameters:
-        df (DataFrame): Spark DataFrame containing employee data with numerical EngagementScore.
-
-    Returns:
-        DataFrame: DataFrame containing JobTitle and their average EngagementLevel.
+def calculate_avg_engagement_by_job(employee_df):
     """
-    # TODO: Implement Task 3
-    # Steps:
-    # 1. Map EngagementLevel to numerical values.
-    # 2. Group by JobTitle and calculate average EngagementScore.
-    # 3. Round the average to two decimal places.
-    # 4. Return the result DataFrame.
-
-    pass  # Remove this line after implementing the function
-
-def write_output(result_df, output_path):
+    Calculate the average engagement score per job title.
     """
-    Write the result DataFrame to a CSV file.
+    return employee_df.groupBy("JobTitle").agg(spark_round(avg("EngagementScore"), 2).alias("AvgEngagementScore"))
 
-    Parameters:
-        result_df (DataFrame): Spark DataFrame containing the result.
-        output_path (str): Path to save the output CSV file.
-
-    Returns:
-        None
+def save_engagement_results(engagement_df, output_file):
     """
-    result_df.coalesce(1).write.csv(output_path, header=True, mode='overwrite')
+    Save engagement level comparisons to a CSV file.
+    """
+    engagement_df.coalesce(1).write.csv(output_file, header=True, mode='overwrite')
 
 def main():
     """
-    Main function to execute Task 3.
+    Main execution function.
     """
-    # Initialize Spark
-    spark = initialize_spark()
+    spark = initialize_spark_session()
     
-    # Define file paths
-    input_file = "/workspaces/Employee_Engagement_Analysis_Spark/input/employee_data.csv"
-    output_file = "/workspaces/Employee_Engagement_Analysis_Spark/outputs/task3/engagement_levels_job_titles.csv"
+    input_file = "/workspaces/spark-structured-api-employee-engagement-analysis-KAmrutha/input/employee_data.csv"
+    output_file = "/workspaces/spark-structured-api-employee-engagement-analysis-KAmrutha/outputs/task3/compare_engagement_levels.csv"
     
-    # Load data
-    df = load_data(spark, input_file)
+    employee_df = load_employee_data(spark, input_file)
     
-    # Perform Task 3
-    df_mapped = map_engagement_level(df)
-    result_df = compare_engagement_levels(df_mapped)
+    employee_df_scored = assign_engagement_scores(employee_df)
     
-    # Write the result to CSV
-    write_output(result_df, output_file)
+    avg_engagement_df = calculate_avg_engagement_by_job(employee_df_scored)
     
-    # Stop Spark Session
+    save_engagement_results(avg_engagement_df, output_file)
+    
     spark.stop()
 
 if __name__ == "__main__":
