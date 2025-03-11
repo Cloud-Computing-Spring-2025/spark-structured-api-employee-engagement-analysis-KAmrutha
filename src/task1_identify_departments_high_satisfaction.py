@@ -2,15 +2,11 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, count, when, round as spark_round
 
 def initialize_spark_session(app_name="Identify_High_Satisfaction_Departments"):
-    """
-    Initialize and return a SparkSession.
-    """
+   
     return SparkSession.builder.appName(app_name).getOrCreate()
 
 def load_employee_data(spark, file_path):
-    """
-    Load employee data from a CSV file into a Spark DataFrame.
-    """
+   
     schema = """
         EmployeeID INT, 
         Department STRING, 
@@ -23,10 +19,7 @@ def load_employee_data(spark, file_path):
     return spark.read.csv(file_path, header=True, schema=schema)
 
 def filter_high_satisfaction_departments(employee_df):
-    """
-    Identify departments where more than 50% of employees have a Satisfaction Rating > 4
-    and an Engagement Level of 'High'.
-    """
+   
     high_satisfaction_df = employee_df.filter(
         (col("SatisfactionRating") > 4) & (col("EngagementLevel") == "High")
     )
@@ -47,15 +40,11 @@ def filter_high_satisfaction_departments(employee_df):
     return percentage_df.filter(col("HighSatisfactionPercentage") > 7.5).select("Department", "HighSatisfactionPercentage")
 
 def save_results_to_csv(result_df, output_file):
-    """
-    Save the resulting DataFrame to a CSV file.
-    """
+   
     result_df.coalesce(1).write.csv(output_file, header=True, mode='overwrite')
 
 def main():
-    """
-    Main execution function.
-    """
+  
     spark = initialize_spark_session()
     
     input_file = "/workspaces/spark-structured-api-employee-engagement-analysis-KAmrutha/input/employee_data.csv"
